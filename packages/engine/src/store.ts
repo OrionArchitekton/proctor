@@ -102,6 +102,6 @@ function isEnoent(err: unknown): boolean {
   return (
     typeof err === "object" &&
     err !== null &&
-    (err as NodeJS.ErrnoException).code === "ENOENT"
+    (err as { code?: string }).code === "ENOENT"
   );
 }

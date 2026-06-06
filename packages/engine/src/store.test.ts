@@ -132,8 +132,9 @@ describe("ContractStore — version", () => {
     });
     const totalFields = patched.fields.filter((f) => f.name === "total");
     expect(totalFields).toHaveLength(1); // no duplicate
-    expect(totalFields[0].kind).toBe("semantic");
-    expect(totalFields[0].tolerance).toBe(0.1);
+    const totalField = totalFields[0];
+    expect(totalField?.kind).toBe("semantic");
+    expect(totalField?.tolerance).toBe(0.1);
   });
 
   it("invariant deduplication: patching an existing invariant does not duplicate it", async () => {
