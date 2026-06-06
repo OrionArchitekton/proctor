@@ -1,6 +1,6 @@
 import type { TestReport, DriftVerdict } from "@proctor/shared";
-import { isInvariantId } from "./invariants";
-import { SEMANTIC_SIMILARITY_THRESHOLD, FLAKY_TOLERANCE } from "./config";
+import { isInvariantId } from "./invariants.js";
+import { SEMANTIC_SIMILARITY_THRESHOLD, FLAKY_TOLERANCE } from "./config.js";
 
 // ── public types ───────────────────────────────────────────────────────────
 

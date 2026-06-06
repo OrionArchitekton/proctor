@@ -3,9 +3,9 @@ import {
   assertExact,
   assertSemantic,
   type SemanticJudge,
-} from "./assertions";
-import { checkInvariants } from "./invariants";
-import { SEMANTIC_SIMILARITY_THRESHOLD } from "./config";
+} from "./assertions.js";
+import { checkInvariants } from "./invariants.js";
+import { SEMANTIC_SIMILARITY_THRESHOLD } from "./config.js";
 
 export interface RunDeps {
   runSut: (sut: SutRef, input: unknown) => Promise<Record<string, unknown>>;

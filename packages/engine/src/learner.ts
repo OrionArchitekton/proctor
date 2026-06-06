@@ -1,6 +1,6 @@
 import type { Contract, FieldAssertion, SutRef } from "@proctor/shared";
-import { INVARIANT_IDS } from "./invariants";
-import { BASELINE_RUNS_N } from "./config";
+import { INVARIANT_IDS } from "./invariants.js";
+import { BASELINE_RUNS_N } from "./config.js";
 
 // ── public types ───────────────────────────────────────────────────────────
 
