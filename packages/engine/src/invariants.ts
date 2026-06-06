@@ -112,6 +112,16 @@ const REGISTRY: Record<string, (output: unknown) => AssertionResult> = {
   dates_parseable: checkDatesParseable,
 };
 
+// ── public constants ───────────────────────────────────────────────────────
+
+/** The complete set of registered invariant ids. */
+export const INVARIANT_IDS: readonly string[] = Object.keys(REGISTRY) as string[];
+
+/** Returns true when `id` is a registered invariant id. */
+export function isInvariantId(id: string): boolean {
+  return Object.prototype.hasOwnProperty.call(REGISTRY, id);
+}
+
 // ── public API ─────────────────────────────────────────────────────────────
 
 export function checkInvariants(output: unknown, ids: string[]): AssertionResult[] {
