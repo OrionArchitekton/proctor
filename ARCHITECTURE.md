@@ -109,11 +109,13 @@ interface UiPathGateway {
 
 ```
 apps/web
-  └── @proctor/workflows
-        ├── @proctor/engine     (pure)
-        ├── @proctor/shared     (types)
-        ├── @proctor/sut-invoice
-        └── @proctor/uipath
+  ├── @proctor/workflows          (start/resumeHook: bootstrap, run, approve)
+  │     ├── @proctor/engine       (pure)
+  │     ├── @proctor/shared       (types)
+  │     ├── @proctor/sut-invoice
+  │     └── @proctor/uipath
+  └── (read path) @proctor/engine ContractStore + @proctor/uipath LocalGateway
+        — used directly by GET /api/state for read-only dashboard polling
 ```
 
-The engine has no upward dependencies. The workflow layer is the only place that wires the engine to real I/O. The web app only calls workflow-layer routes — it never imports the engine directly.
+The engine has no upward dependencies (it imports only `@proctor/shared`, plus `node:fs` in `store.ts`). The workflow layer is the only place that wires the engine to real I/O for **mutating** actions (bootstrap/run/approve all go through `start()`/`resumeHook`). The one exception is the **read-only** `GET /api/state` route, which reads the `ContractStore` and `LocalGateway` event log directly for dashboard polling — it performs no orchestration, so it deliberately bypasses the workflow layer.
