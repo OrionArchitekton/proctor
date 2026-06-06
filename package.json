@@ -4,7 +4,7 @@
   "scripts": {
     "test": "vitest run -c vitest.config.ts",
     "test:int": "vitest run -c vitest.integration.config.ts",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc --noEmit",
     "dev": "pnpm --filter @proctor/web dev"
   },
   "devDependencies": {
