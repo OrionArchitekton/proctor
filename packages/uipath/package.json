@@ -1,0 +1,2 @@
+{ "name": "@proctor/uipath", "version": "0.0.0", "type": "module", "main": "src/index.ts",
+  "dependencies": { "@proctor/shared": "workspace:*" } }
