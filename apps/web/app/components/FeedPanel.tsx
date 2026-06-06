@@ -101,7 +101,7 @@ export default function FeedPanel({ events }: FeedPanelProps) {
               const { className, icon } = styleForEvent(evt);
               const { title, meta } = describeEvent(evt);
               return (
-                <div className={`feed-item ${className}`} key={i}>
+                <div className={`feed-item ${className}`} key={`${evt.ts}-${evt.type}-${i}`}>
                   <span className="feed-icon">{icon}</span>
                   <div className="feed-content">
                     <div className="feed-title">{title}</div>
