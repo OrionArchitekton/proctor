@@ -260,7 +260,9 @@ Goal: a single, polished, end-to-end working slice — which the rubric rewards 
 
 ## 11. Open items / dependencies
 
-- **CRITICAL PATH:** confirm UiPath Labs access requested today; TestCloudGateway wiring waits on creds.
+- **CRITICAL PATH (RESOLVED):** UiPath Labs access **requested Fri 2026-06-05**. With UiPath's
+  ~3-business-day SLA, creds expected **~2026-06-10**. TestCloudGateway wiring waits on creds;
+  all other work proceeds now. Deadline 2026-06-29 → ample buffer.
 - Final project name (`Proctor` working title).
 - Deck (UiPath template) — separate workstream from code.
 - Team composition (1–4 people) — affects parallelism, not the design.
