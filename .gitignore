@@ -9,3 +9,5 @@ dist/
 .workflow-vitest/
 .workflow-data/
 *.tsbuildinfo
+.proctor-demo/
+.proctor-data/

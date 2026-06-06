@@ -5,7 +5,8 @@
     "test": "vitest run -c vitest.config.ts",
     "test:int": "vitest run -c vitest.integration.config.ts",
     "typecheck": "tsc --noEmit",
-    "dev": "pnpm --filter @proctor/web dev"
+    "dev": "pnpm --filter @proctor/web dev",
+    "demo": "tsx scripts/seed-demo.ts"
   },
   "devDependencies": {
     "@proctor/engine": "workspace:*",
