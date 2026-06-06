@@ -1,0 +1,13 @@
+{
+  "id": "inv-003",
+  "text": "INVOICE\nVendor: Initech Systems\nDate: 2026-03-10\nCurrency: GBP\nServer rack unit    1200.00\nUPS battery          350.00\nCabling kit           48.00\nInstallation labor   180.00\nTotal:              1778.00",
+  "vendor": "Initech Systems",
+  "currency": "GBP",
+  "date": "2026-03-10",
+  "line_items": [
+    { "description": "Server rack unit", "amount": 1200 },
+    { "description": "UPS battery", "amount": 350 },
+    { "description": "Cabling kit", "amount": 48 },
+    { "description": "Installation labor", "amount": 180 }
+  ]
+}

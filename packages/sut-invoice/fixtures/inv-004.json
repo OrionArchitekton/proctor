@@ -1,0 +1,10 @@
+{
+  "id": "inv-004",
+  "text": "INVOICE\nVendor: Umbrella Research SA\nDate: 2026-04-05\nCurrency: CHF\nBioreactor module   9500.00\nTotal:              9500.00",
+  "vendor": "Umbrella Research SA",
+  "currency": "CHF",
+  "date": "2026-04-05",
+  "line_items": [
+    { "description": "Bioreactor module", "amount": 9500 }
+  ]
+}

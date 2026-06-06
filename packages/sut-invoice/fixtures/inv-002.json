@@ -1,0 +1,12 @@
+{
+  "id": "inv-002",
+  "text": "INVOICE\nVendor: Globex Ltd\nDate: 2026-02-28\nCurrency: EUR\nConsulting - 8hrs   400.00\nTravel expenses      75.50\nSoftware license    200.00\nTotal:              675.50",
+  "vendor": "Globex Ltd",
+  "currency": "EUR",
+  "date": "2026-02-28",
+  "line_items": [
+    { "description": "Consulting - 8hrs", "amount": 400 },
+    { "description": "Travel expenses", "amount": 75.50 },
+    { "description": "Software license", "amount": 200 }
+  ]
+}
