@@ -22,6 +22,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload", issues: parsed.error.issues }, { status: 400 });
   }
 
-  await resumeHook(token, parsed.data);
-  return NextResponse.json({ ok: true });
+  try {
+    await resumeHook(token, parsed.data);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Failed to resume approval hook:", error);
+    return NextResponse.json(
+      { error: "Failed to resume workflow" },
+      { status: 500 },
+    );
+  }
 }

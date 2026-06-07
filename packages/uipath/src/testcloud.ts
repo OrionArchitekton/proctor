@@ -124,8 +124,12 @@ export class TestCloudGateway implements UiPathGateway {
    */
   async recordGovernanceEvent(evt: GovernanceEvent): Promise<void> {
     this.assertConfigured();
-    // TODO: POST to appropriate UiPath audit endpoint
-    // For now, no-op beyond asserting configuration — avoids swallowing events silently.
-    void evt;
+    // The UiPath audit endpoint is not yet wired, so this event is NOT persisted
+    // to a remote audit trail. We surface that explicitly via a warning rather
+    // than discarding it under a comment claiming otherwise. Use
+    // PROCTOR_GATEWAY=local for a persisted audit trail.
+    console.warn(
+      `TestCloudGateway.recordGovernanceEvent: UiPath audit endpoint not implemented — event not persisted remotely (type=${evt.type}, sutId=${evt.sutId})`,
+    );
   }
 }

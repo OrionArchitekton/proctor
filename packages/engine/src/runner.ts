@@ -13,6 +13,18 @@ export interface RunDeps {
 }
 
 /**
+ * Coerce a value to a string for semantic comparison.
+ * Primitives use String(); objects/arrays use JSON.stringify() so structured
+ * values don't collapse to "[object Object]" or lossy comma-joins.
+ */
+function toComparable(value: unknown): string {
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+/**
  * Presence-check for structural assertions.
  * Passes when the field exists and is not null/undefined.
  */
@@ -89,8 +101,8 @@ export async function runContract(
               SEMANTIC_SIMILARITY_THRESHOLD - (field.tolerance ?? 0);
             result = await assertSemantic(
               field.name,
-              String(baseline),
-              String(value),
+              toComparable(baseline),
+              toComparable(value),
               judge,
               effectiveThreshold,
             );

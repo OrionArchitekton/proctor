@@ -68,7 +68,9 @@ export class ContractStore {
       // Replace existing fields where name matches, preserve others, then append truly new ones.
       const updated = existing.fields.map((f) => patchMap.get(f.name) ?? f);
       const existingNames = new Set(existing.fields.map((f) => f.name));
-      const appended = patch.fields.filter((f) => !existingNames.has(f.name));
+      // Iterate patchMap (de-duplicated by name) so duplicate new-field names in
+      // patch.fields collapse to a single appended entry.
+      const appended = [...patchMap.values()].filter((f) => !existingNames.has(f.name));
       mergedFields = [...updated, ...appended];
     } else {
       mergedFields = existing.fields;
