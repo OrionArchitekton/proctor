@@ -41,7 +41,7 @@ export class TestCloudGateway implements UiPathGateway {
     this.assertConfigured();
     const url = `${this.baseUrl}/${this.tenant}/testautomation_/api/v2/results`;
     // TODO: map SutRef + TestReport to Test Cloud result body
-    await fetch(url, {
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${this.pat}`,
@@ -49,6 +49,11 @@ export class TestCloudGateway implements UiPathGateway {
       },
       body: JSON.stringify({ sutId: sut.id, allPassed: report.allPassed }),
     });
+    if (!res.ok) {
+      throw new Error(
+        `Test Cloud pushTestResult failed: ${res.status} ${res.statusText}`,
+      );
+    }
   }
 
   /**
@@ -69,8 +74,19 @@ export class TestCloudGateway implements UiPathGateway {
       },
       body: JSON.stringify({ sutId: sut.id, verdict }),
     });
+    if (!res.ok) {
+      throw new Error(
+        `Action Center openApprovalTask failed: ${res.status} ${res.statusText}`,
+      );
+    }
     const body = (await res.json()) as { Id?: string; value?: { Id: string }[] };
-    return body.Id ?? `task-${sut.id}-remote`;
+    const taskId = body.Id ?? body.value?.[0]?.Id;
+    if (!taskId) {
+      throw new Error(
+        "Action Center openApprovalTask returned no task ID — refusing to fabricate one",
+      );
+    }
+    return taskId;
   }
 
   /**
@@ -92,6 +108,11 @@ export class TestCloudGateway implements UiPathGateway {
       },
       body: JSON.stringify({ changeId: change.changeId, sutId: change.sutId }),
     });
+    if (!res.ok) {
+      throw new Error(
+        `Orchestrator triggeredRun failed: ${res.status} ${res.statusText}`,
+      );
+    }
     const body = (await res.json()) as { value?: { Id: number }[] };
     const jobId = body.value?.[0]?.Id ?? change.changeId;
     return { runId: String(jobId) };

@@ -68,15 +68,33 @@ export async function runContract(
           break;
 
         case "semantic": {
-          const effectiveThreshold =
-            SEMANTIC_SIMILARITY_THRESHOLD - (field.tolerance ?? 0);
-          result = await assertSemantic(
-            field.name,
-            String(baseline),
-            String(value),
-            judge,
-            effectiveThreshold,
-          );
+          if (
+            value === undefined ||
+            value === null ||
+            baseline === undefined ||
+            baseline === null
+          ) {
+            // Missing value/baseline must fail — never coerce to "null"/"undefined"
+            // strings, which would yield a false-positive semantic match.
+            result = {
+              field: field.name,
+              kind: "semantic",
+              passed: false,
+              evidence: `value or baseline is missing (value=${String(
+                value,
+              )}, baseline=${String(baseline)})`,
+            };
+          } else {
+            const effectiveThreshold =
+              SEMANTIC_SIMILARITY_THRESHOLD - (field.tolerance ?? 0);
+            result = await assertSemantic(
+              field.name,
+              String(baseline),
+              String(value),
+              judge,
+              effectiveThreshold,
+            );
+          }
           break;
         }
       }

@@ -44,9 +44,11 @@ function fakePath(input: InvoiceInput, opts: ExtractOpts): InvoiceOutput {
 
   // degraded: deterministic wrong total — mimics "forgot to sum" regression
   const wrongTotal =
-    line_items.length === 1
-      ? line_items[0]!.amount * 0.9  // single-item edge: still shows regression
-      : line_items[0]!.amount;        // multi-item: only first item (omits rest)
+    line_items.length === 0
+      ? 0                             // empty: no items to mis-sum
+      : line_items.length === 1
+        ? line_items[0]!.amount * 0.9  // single-item edge: still shows regression
+        : line_items[0]!.amount;        // multi-item: only first item (omits rest)
 
   return { vendor, currency, date, line_items, total: wrongTotal };
 }

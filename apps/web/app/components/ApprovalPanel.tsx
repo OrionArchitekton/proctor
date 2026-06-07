@@ -16,13 +16,28 @@ interface ApprovalPayload {
 }
 
 export default function ApprovalPanel({ events, lastChangeId, onApprove, loading }: ApprovalPanelProps) {
-  // Find the most recent approval_task_opened that hasn't been followed by a cycle_result
-  // or an explicit resolution. We use a simple heuristic: any approval_task_opened event
-  // for the current changeId that appears after the last triggered_run for that changeId.
-  const pendingEvents = events.filter((e) => e.type === "approval_task_opened");
-  const lastApproval = pendingEvents[pendingEvents.length - 1] as GovernanceEvent | undefined;
+  if (!lastChangeId) {
+    return null;
+  }
 
-  if (!lastApproval || !lastChangeId) {
+  // Show the panel only when the most recent approval_task_opened is still the
+  // latest relevant event — i.e. it has NOT been superseded by a newer
+  // triggered_run or cycle_result (which would mean the task was resolved or a
+  // fresh run succeeded without needing approval).
+  const lastApproval = [...events]
+    .reverse()
+    .find((e) => e.type === "approval_task_opened");
+  const lastResolution = [...events]
+    .reverse()
+    .find((e) => e.type === "triggered_run" || e.type === "cycle_result");
+
+  if (!lastApproval) {
+    return null;
+  }
+  if (
+    lastResolution &&
+    new Date(lastApproval.ts) < new Date(lastResolution.ts)
+  ) {
     return null;
   }
 

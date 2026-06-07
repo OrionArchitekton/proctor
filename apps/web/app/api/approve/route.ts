@@ -5,9 +5,13 @@ import { ApprovalDecisionSchema } from "@proctor/shared";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as unknown;
+  let bodyObj: Record<string, unknown>;
+  try {
+    bodyObj = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-  const bodyObj = body as Record<string, unknown>;
   const { token } = bodyObj as { token?: string };
   if (!token || typeof token !== "string") {
     return NextResponse.json({ error: "Missing token" }, { status: 400 });

@@ -75,7 +75,8 @@ function describeEvent(evt: GovernanceEvent): { title: string; meta: string } {
 function formatTs(ts: string): string {
   try {
     const d = new Date(ts);
-    return d.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    // Force UTC to avoid SSR/client timezone hydration mismatch.
+    return d.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "UTC" });
   } catch {
     return ts.slice(11, 19) ?? "";
   }
