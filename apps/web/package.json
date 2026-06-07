@@ -14,7 +14,7 @@
     "@proctor/sut-invoice": "workspace:*",
     "@proctor/uipath": "workspace:*",
     "@proctor/workflows": "workspace:*",
-    "next": "15.3.3",
+    "next": "15.5.19",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "workflow": "4.3.1"
