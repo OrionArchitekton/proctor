@@ -120,6 +120,18 @@ The `TestCloudGateway` in `packages/uipath/src/testcloud.ts` contains the wired 
 
 ---
 
+## Known limitations & production hardening
+
+Proctor is a working MVP scoped for the hackathon. The following are deliberate scope boundaries, documented honestly for anyone extending it toward production:
+
+- **Approval endpoint is unauthenticated.** `POST /api/approve` resumes a workflow from a deterministic hook token with no authn/authz/CSRF and no server-side task lookup. This is fine for the local demo (no exposed attacker surface) but a production deployment must put the approval action behind authentication, verify the reviewer's authority, and look the task up server-side rather than trusting a client-supplied token. In the intended architecture this approval lives in **UiPath Action Center**, which provides the identity and governance layer.
+- **Regression detection leans on invariants, not golden values — by design.** Because the systems-under-test are *non-deterministic*, Proctor does **not** assert golden output equality. The runner derives its in-run baseline from the first observed output and relies on **invariants** (e.g. `sum_line_items_eq_total`) — absolute properties that hold regardless of baseline — plus semantic tolerance bands. This is the core thesis (you can't unit-test an LLM agent with `==`). The known consequence: a *uniformly* wrong SUT could self-baseline for the field-level (non-invariant) checks. The planned enhancement is to persist learned reference values in the `Contract` so semantic-drift detection no longer depends on the in-run baseline; invariants already cover value correctness today.
+- **Step granularity.** `pushToUiPathStep` bundles more than one side effect in a single retryable step, and the approval hook token isn't embedded in the Action Center task payload. Splitting these and persisting the token are straightforward follow-ups for stronger idempotency and self-contained approvals.
+
+These are tracked as open follow-ups; none affect the demonstrated end-to-end flow (all tests pass and the live suspend→resume cycle is verified).
+
+---
+
 ## Built with coding agents
 
 The entire Proctor solution — monorepo structure, engine packages, workflow steps, Next.js dashboard, test suite, and this documentation — was built by **Claude Code** (Anthropic's coding agent). The git commit history is the evidence.
