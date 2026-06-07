@@ -106,17 +106,62 @@ All tests and the demo run **keyless** by default (`PROCTOR_FAKE_LLM=1`, `PROCTO
 
 ## Connecting real UiPath Test Cloud
 
-When UiPath Labs credentials are available:
+When UiPath Labs credentials are available, set the full env var set and flip the gateway:
 
 ```bash
-export UIPATH_BASE_URL=https://cloud.uipath.com
-export UIPATH_TENANT=<your-tenant>
-export UIPATH_PAT=<personal-access-token>
+# Required
+export UIPATH_BASE_URL=https://cloud.uipath.com   # Automation Cloud base URL
+export UIPATH_TENANT=<your-tenant>                # tenant name ({tenantName} URL segment)
+export UIPATH_PAT=<personal-access-token>         # sent as Authorization: Bearer
+
+# Required for real Cloud calls (each is asserted where used, with a clear error)
+export UIPATH_ORG=<organization-name>             # {organizationName} URL segment
+export UIPATH_FOLDER_ID=<folder-id>               # Orchestrator folder / OrganizationUnit id → X-UIPATH-OrganizationUnitId
+export UIPATH_PROCTOR_RELEASE_KEY=<release-uuid>  # ReleaseKey of the Proctor process (StartJobs)
+export UIPATH_TEST_SET_ID=<test-set-id>           # Test Set Proctor reports against
+
+# Optional
+export UIPATH_TASK_CATALOG=<catalog-name>         # Action Center task catalog for external tasks
+
 export PROCTOR_GATEWAY=testcloud
 pnpm dev
 ```
 
-The `TestCloudGateway` in `packages/uipath/src/testcloud.ts` contains the wired endpoints with TODOs for the final request-body mapping per the Test Cloud API spec. The adapter compiles and is integrated today; the TODOs are blocked only on live credentials to exercise and finalize the response shapes.
+The `TestCloudGateway` in `packages/uipath/src/testcloud.ts` is **wired against the
+public UiPath Automation Cloud REST API** (endpoints + request/response shapes built
+from the docs, cited inline). The endpoints it talks to:
+
+| Proctor call            | UiPath endpoint                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `pushTestResult`        | `POST .../orchestrator_/api/TestAutomation/StartTestSetExecution?testSetId=&triggerType=ExternalTool` |
+| `openApprovalTask`      | `POST .../orchestrator_/tasks/GenericTasks/CreateTask` (`type: "ExternalTask"`) |
+| `triggeredRun`          | `POST .../orchestrator_/odata/Jobs/UiPath.Server.Configuration.OData.StartJobs` |
+| `recordGovernanceEvent` | none — UiPath's Audit Log API is read-only; event is warned, not persisted remotely (use `local` for a persisted trail) |
+
+> **Honest status: this path is wired-but-unverified-against-a-live-tenant.** It has
+> NOT been run against a real UiPath tenant — no credentials yet. Every uncertain
+> endpoint/field carries a `// VERIFY:` comment with its doc URL in `testcloud.ts`.
+> Once creds land the remaining work is "plug credentials + verify," not new
+> development.
+
+### Post-credentials verification checklist
+
+After provisioning the env vars above and setting `PROCTOR_GATEWAY=testcloud`:
+
+1. **Flip the gateway** and run one full Proctor cycle (`pnpm dev`, then drive a run).
+2. **Test result** — confirm a Test Set execution appears in UiPath Test Cloud /
+   Test Automation for `UIPATH_TEST_SET_ID`, and confirm whether the API wants the
+   external result in the body vs. query params (the `pushTestResult` `// VERIFY:`).
+3. **Approval task** — confirm a `Proctor: <kind> on <sut>` external task appears in
+   **Action Center**, that the `priority` enum/casing is accepted, that `data` carries
+   the verdict, and that the created task `id` field name matches (`id` vs `Id`).
+4. **Triggered run** — confirm `StartJobs` accepts `Strategy: "ModernJobsCount"` for
+   the Proctor process's folder type, that the process declares matching input
+   arguments (`changeId`, `sutId`, `touched`), and that a job `Id` is returned.
+5. **Folder header** — confirm `X-UIPATH-OrganizationUnitId` = `UIPATH_FOLDER_ID` is
+   accepted on all folder-scoped calls.
+6. **Walk every `// VERIFY:` in `packages/uipath/src/testcloud.ts`** and resolve it
+   against the tenant's Swagger (`.../orchestrator_/swagger/index.html`).
 
 ---
 
