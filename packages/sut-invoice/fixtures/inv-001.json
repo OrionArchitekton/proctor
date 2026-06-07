@@ -1,0 +1,11 @@
+{
+  "id": "inv-001",
+  "text": "INVOICE\nVendor: Acme Corp\nDate: 2026-01-15\nCurrency: USD\nWidget x2          100.00\nGadget              50.00\nTotal:             150.00",
+  "vendor": "Acme Corp",
+  "currency": "USD",
+  "date": "2026-01-15",
+  "line_items": [
+    { "description": "Widget", "amount": 100 },
+    { "description": "Gadget", "amount": 50 }
+  ]
+}

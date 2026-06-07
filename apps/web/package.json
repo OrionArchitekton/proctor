@@ -1,0 +1,28 @@
+{
+  "name": "@proctor/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "PROCTOR_FAKE_LLM=1 PROCTOR_GATEWAY=local PROCTOR_DATA_DIR=.proctor-data next dev",
+    "build": "next build",
+    "start": "PROCTOR_FAKE_LLM=1 PROCTOR_GATEWAY=local PROCTOR_DATA_DIR=.proctor-data next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@proctor/engine": "workspace:*",
+    "@proctor/shared": "workspace:*",
+    "@proctor/sut-invoice": "workspace:*",
+    "@proctor/uipath": "workspace:*",
+    "@proctor/workflows": "workspace:*",
+    "next": "15.5.19",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "workflow": "4.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22",
+    "@types/react": "19.1.6",
+    "@types/react-dom": "19.1.5",
+    "typescript": "^5.6.0"
+  }
+}

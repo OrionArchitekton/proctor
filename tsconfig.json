@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": { "@proctor/*": ["packages/*/src"] }
+  },
+  "include": ["packages/**/*.ts", "workflows/**/*.ts", "apps/**/*.ts"],
+  "exclude": ["**/node_modules", "**/dist", "**/.next"]
+}

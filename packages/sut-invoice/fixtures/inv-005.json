@@ -1,0 +1,13 @@
+{
+  "id": "inv-005",
+  "text": "INVOICE\nVendor: Nakatomi Trading Co\nDate: 2026-05-20\nCurrency: JPY\nPremium sake set    3200.00\nWashi paper          480.00\nLacquer tray         920.00\nShipping             150.00\nTotal:              4750.00",
+  "vendor": "Nakatomi Trading Co",
+  "currency": "JPY",
+  "date": "2026-05-20",
+  "line_items": [
+    { "description": "Premium sake set", "amount": 3200 },
+    { "description": "Washi paper", "amount": 480 },
+    { "description": "Lacquer tray", "amount": 920 },
+    { "description": "Shipping", "amount": 150 }
+  ]
+}

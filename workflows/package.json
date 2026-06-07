@@ -1,0 +1,19 @@
+{
+  "name": "@proctor/workflows",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "workflow": "latest",
+    "@workflow/ai": "latest",
+    "ai": "latest",
+    "@ai-sdk/anthropic": "latest",
+    "@proctor/shared": "workspace:*",
+    "@proctor/engine": "workspace:*",
+    "@proctor/sut-invoice": "workspace:*",
+    "@proctor/uipath": "workspace:*"
+  },
+  "devDependencies": {
+    "@workflow/vitest": "latest"
+  }
+}

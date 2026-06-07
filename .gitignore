@@ -6,3 +6,8 @@ dist/
 *.log
 .DS_Store
 .workflow/
+.workflow-vitest/
+.workflow-data/
+*.tsbuildinfo
+.proctor-demo/
+.proctor-data/
