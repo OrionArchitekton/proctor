@@ -129,7 +129,7 @@ Copy [`.env.example`](./.env.example) if you want to exercise the real paths. Pl
 |---------------------|-------------------------|---------|-------|
 | `PROCTOR_FAKE_LLM`  | keyless deterministic run | `1` in dev | Set to `1` to skip live LLM calls. |
 | `PROCTOR_GATEWAY`   | gateway selection       | `local` | `local` (disk + dashboard) or `testcloud` (UiPath REST). |
-| `PROCTOR_DATA_DIR`  | governance log location | `.proctor-data` (dev) | Where the governance log and contracts are written. |
+| `PROCTOR_DATA_DIR`  | governance log location | `contracts` | Where the governance log and contracts are written. |
 | `ANTHROPIC_API_KEY` | real LLM path           | —       | Used by the Vercel AI SDK. |
 | `UIPATH_BASE_URL`   | `testcloud` gateway     | —       | e.g. `https://cloud.uipath.com`. |
 | `UIPATH_TENANT`     | `testcloud` gateway     | —       | Your tenant name. |
