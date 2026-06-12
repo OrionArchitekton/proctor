@@ -110,7 +110,7 @@ When UiPath Labs credentials are available, set the full env var set and flip th
 
 ```bash
 # Required
-export UIPATH_BASE_URL=https://cloud.uipath.com   # Automation Cloud base URL
+export UIPATH_BASE_URL=https://cloud.uipath.com   # Automation Cloud base URL (UiPath Labs/hackathon tenants may be https://staging.uipath.com — use whatever host your portal URL shows)
 export UIPATH_TENANT=<your-tenant>                # tenant name ({tenantName} URL segment)
 export UIPATH_PAT=<personal-access-token>         # sent as Authorization: Bearer
 
