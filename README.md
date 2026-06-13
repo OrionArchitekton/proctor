@@ -1,5 +1,8 @@
 # Proctor — The Agent That QAs Other Agents
 
+![License: MIT](https://img.shields.io/github/license/OrionArchitekton/proctor?style=flat&color=1a1a1a)
+![TypeScript](https://img.shields.io/badge/TypeScript-1a1a1a?style=flat&logo=typescript&logoColor=3178C6)
+
 **UiPath AgentHack 2026 — Track 3: UiPath Test Cloud**
 
 Repo: https://github.com/OrionArchitekton/proctor · Demo: `pnpm dev` → http://localhost:3000 (keyless, no API key)
