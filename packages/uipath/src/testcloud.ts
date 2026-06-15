@@ -4,11 +4,19 @@ import type { UiPathGateway, RunHandle, TaskId } from "./gateway.js";
 /**
  * TestCloudGateway — real UiPath Automation Cloud REST wiring for Proctor.
  *
- * STATUS: wired-but-unverified-against-a-live-tenant. Every endpoint/body below
- * is built from the public UiPath docs (cited inline) but has NOT been exercised
- * against a real tenant. Each spot that must be confirmed once UiPath Labs
- * credentials land is marked with a `// VERIFY:` comment + the doc URL. Do not
- * treat this as tested/working until those VERIFY items are checked live.
+ * STATUS (2026-06-15, UiPath Labs tenant hackathon26_529/DefaultTenant):
+ *   - openApprovalTask()      VERIFIED LIVE — created Action Center task id
+ *                             100000126 with this exact code (CreateTask
+ *                             GenericTasks endpoint, ExternalTask body, "Critical"
+ *                             priority, folder header, lowercase `id` response).
+ *   - recordGovernanceEvent() VERIFIED — warn-only by design (no UiPath audit-write API).
+ *   - triggeredRun()          WIRED, fail-closed — needs UIPATH_PROCTOR_RELEASE_KEY
+ *                             (a published Orchestrator process); not yet exercised.
+ *   - pushTestResult()        WIRED, fail-closed — needs UIPATH_TEST_SET_ID
+ *                             (a Test Set in the tenant); not yet exercised.
+ * The remaining endpoints/bodies are built from the public UiPath docs (cited
+ * inline); spots still to confirm against the live tenant keep a `// VERIFY:`
+ * comment + doc URL. Run scripts/live-gateway-probe.ts to re-exercise live.
  *
  * --- Required env (constructor throws via assertConfigured() if any missing) ---
  *   UIPATH_BASE_URL  — Automation Cloud base, e.g. https://cloud.uipath.com
@@ -245,14 +253,14 @@ export class TestCloudGateway implements UiPathGateway {
   async openApprovalTask(sut: SutRef, verdict: DriftVerdict): Promise<TaskId> {
     this.assertConfigured();
 
+    // CONFIRMED LIVE 2026-06-15: this endpoint created task id 100000126 on the
+    // UiPath Labs tenant. Folder-scoped (X-UIPATH-OrganizationUnitId required).
     const url = `${this.orchestratorBase()}/tasks/GenericTasks/CreateTask`;
 
     const body: Record<string, unknown> = {
       type: "ExternalTask",
       title: `Proctor: ${verdict.kind} on ${sut.id}`,
-      // VERIFY: confirm the accepted priority enum. Docs show "High" in examples
-      // and the common set is Low/Medium/High/Critical — confirm casing/values
-      // against the tenant. We map verdict kind → priority defensively.
+      // CONFIRMED LIVE: "Critical" accepted (set: Low/Medium/High/Critical).
       priority: priorityForVerdict(verdict),
       // `data` carries the full verdict + sut so the human reviewer in Action
       // Center sees the rationale and proposed contract patch.
@@ -266,9 +274,7 @@ export class TestCloudGateway implements UiPathGateway {
       ...(this.taskCatalog ? { taskCatalogName: this.taskCatalog } : {}),
     };
 
-    // VERIFY: CreateTask is a folder-scoped Orchestrator call — confirm it
-    // requires X-UIPATH-OrganizationUnitId and that UIPATH_FOLDER_ID points at
-    // the folder that owns the (optional) task catalog.
+    // CONFIRMED LIVE: folder-scoped; X-UIPATH-OrganizationUnitId = UIPATH_FOLDER_ID.
     const res = await this.request<{ id?: number; Id?: number; value?: { Id: number }[] }>(
       url,
       {
