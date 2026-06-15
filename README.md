@@ -69,7 +69,7 @@ The UiPath `UiPathGateway` adapter is the seam between the planes:
 
 Two implementations sit behind `UiPathGateway`:
 - **`LocalGateway`** — records events to `governance.log.jsonl` on disk and drives the Next.js dashboard. Default; no credentials required. Run today.
-- **`TestCloudGateway`** — REST stubs for Test Cloud / Action Center / Orchestrator, gated behind `UIPATH_*` credentials, with TODOs for the final request-body mapping (`packages/uipath/src/testcloud.ts`).
+- **`TestCloudGateway`** — real UiPath Automation Cloud REST calls (Action Center tasks, Orchestrator jobs, Test Cloud / Orchestrator-queue results), gated behind `UIPATH_*` credentials. All four surfaces **verified live** against a UiPath Labs tenant — see the status table below (`packages/uipath/src/testcloud.ts`).
 
 For a deeper walkthrough of the request flow and package layout, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
