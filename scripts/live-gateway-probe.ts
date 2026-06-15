@@ -48,9 +48,17 @@ const main = async () => {
   const change: ChangeContext = { changeId: "live-probe", sutId: sut.id, touched: ["model"] };
   await attempt("triggeredRun (StartJobs)", () => gw.triggeredRun(change));
 
-  // 4) pushTestResult — needs UIPATH_TEST_SET_ID (expected to fail if unset)
-  const report: TestReport = { sutId: sut.id, allPassed: false, results: [], rawOutputs: [] };
-  await attempt("pushTestResult (Test Automation)", () => gw.pushTestResult(sut, report));
+  // 4) pushTestResult — Test Set path if UIPATH_TEST_SET_ID set, else Orchestrator queue
+  const report: TestReport = {
+    sutId: sut.id,
+    allPassed: false,
+    results: [
+      { field: "sum_line_items_eq_total", kind: "exact", passed: false, evidence: "sum=150 total=100" },
+      { field: "vendor", kind: "structural", passed: true, evidence: "present" },
+    ],
+    rawOutputs: [],
+  };
+  await attempt("pushTestResult (Test Cloud / Orchestrator queue)", () => gw.pushTestResult(sut, report));
 
   console.log();
   console.log("=== probe done ===");

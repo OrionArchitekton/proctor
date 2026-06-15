@@ -14,8 +14,12 @@ import type { UiPathGateway, RunHandle, TaskId } from "./gateway.js";
  *                             67149929 (State=Successful) against the published
  *                             `proctor-cycle-trigger` API workflow. "ModernJobsCount"
  *                             strategy + JSON InputArguments (incl. extra keys) accepted.
- *   - pushTestResult()        WIRED, fail-closed — needs UIPATH_TEST_SET_ID
- *                             (a Test Set in the tenant); not yet exercised.
+ *   - pushTestResult()        VERIFIED LIVE — publishes the TestReport to an
+ *                             Orchestrator Queue (Proctor_TestResults; queue+item
+ *                             created 201). With UIPATH_TEST_SET_ID it instead
+ *                             triggers a Test Cloud Test Set execution, but this
+ *                             Labs tenant gates Test-Case authoring behind a local
+ *                             Robot install, so the queue path is the live one.
  * The remaining endpoints/bodies are built from the public UiPath docs (cited
  * inline); spots still to confirm against the live tenant keep a `// VERIFY:`
  * comment + doc URL. Run scripts/live-gateway-probe.ts to re-exercise live.
@@ -159,83 +163,116 @@ export class TestCloudGateway implements UiPathGateway {
   }
 
   /**
-   * Push test results to UiPath Test Cloud / Test Automation.
+   * Publish a Proctor TestReport to UiPath. Two paths, chosen by configuration:
    *
-   * Approach: trigger a Test Set execution for the configured Test Set via the
-   * Orchestrator Test Automation API, tagging it as an external-tool trigger.
-   * This is the most-documented path for surfacing an automated/external test
-   * result against a Test Set in Test Cloud.
+   * 1. If UIPATH_TEST_SET_ID is set → trigger a Test Cloud Test Set execution
+   *    (Orchestrator Test Automation API, tagged as an external-tool trigger):
+   *      POST {orchestrator_}/api/TestAutomation/StartTestSetExecution
+   *           ?testSetId={id}&triggerType=ExternalTool
+   *    Docs: https://docs.uipath.com/orchestrator/automation-cloud/latest/user-guide/test-executions
    *
-   *   POST {orchestrator_}/api/TestAutomation/StartTestSetExecution
-   *        ?testSetId={id}&triggerType=ExternalTool
-   *   → returns the test set execution Id (numeric).
+   *    NOTE on this UiPath Labs tenant: Test Cases are authored in Studio and the
+   *    tenant's browser-only mode gates RPA/Test-Case authoring behind a local
+   *    UiPath Robot install — so no Test Set could be populated here to exercise
+   *    this path live. The path is wired and runs wherever a Test Set exists; it
+   *    is fail-open to the queue fallback below when none is configured.
    *
-   * Docs:
-   *   https://docs.uipath.com/orchestrator/automation-cloud/latest/user-guide/test-executions
-   *   Forum (endpoint + params + ExternalTool trigger):
-   *   https://forum.uipath.com/t/how-to-trigger-test-set-execution-via-api-in-uipath-orchestrator/5740987
-   *
-   * We map report.allPassed + a per-field summary into the request so the run is
-   * traceable, but the canonical pass/fail in Test Cloud comes from the executed
-   * test cases. See VERIFY notes below — the exact ingestion contract for
-   * *externally-produced* results (vs. Orchestrator running the test set itself)
-   * must be confirmed against the live tenant's Swagger.
+   * 2. Otherwise (the demonstrated path) → publish the TestReport to an
+   *    Orchestrator **Queue** (`UIPATH_RESULTS_QUEUE`, default Proctor_TestResults)
+   *    as the results channel. This needs no Robot and no Test Case, so it is the
+   *    honest, live destination for Proctor's externally-computed results on a
+   *    browser-only tenant. VERIFIED LIVE 2026-06-15 (queue + item created, 201).
+   *      POST {orchestrator_}/odata/QueueDefinitions            (create, idempotent)
+   *      POST {orchestrator_}/odata/Queues/UiPathODataSvc.AddQueueItem
+   *    Docs: https://docs.uipath.com/orchestrator/automation-cloud/latest/api-guide/queues-requests
    */
   async pushTestResult(sut: SutRef, report: TestReport): Promise<void> {
     this.assertConfigured();
 
-    if (!this.testSetId) {
-      throw new Error(
-        "TestCloudGateway.pushTestResult requires UIPATH_TEST_SET_ID (Test Set to report against)."
-      );
-    }
-
-    // Human-readable summary of the local assertion results, carried for
-    // traceability/log correlation on the UiPath side.
-    const summary = {
-      sutId: sut.id,
-      modelLabel: sut.modelLabel,
-      allPassed: report.allPassed,
-      results: report.results.map((r) => ({
-        field: r.field,
-        kind: r.kind,
-        passed: r.passed,
-        evidence: r.evidence,
-        ...(r.score !== undefined ? { score: r.score } : {}),
-      })),
-    };
-
-    // VERIFY: confirm the exact endpoint, HTTP method, and query params against
-    // the tenant Swagger at {orchestrator_}/swagger/index.html#/TestAutomation.
-    // Community evidence shows POST .../api/TestAutomation/StartTestSetExecution
-    // with testSetId + triggerType=ExternalTool; some tenants have moved Test
-    // Automation surfaces into Test Manager (testmanager_) — confirm which
-    // applies for UiPath Labs.
-    // https://forum.uipath.com/t/how-to-trigger-test-set-execution-via-api-in-uipath-orchestrator/5740987
-    const url =
-      `${this.orchestratorBase()}/api/TestAutomation/StartTestSetExecution` +
-      `?testSetId=${encodeURIComponent(this.testSetId)}&triggerType=ExternalTool`;
-
-    // VERIFY: StartTestSetExecution as documented takes its inputs as query
-    // params and may accept an empty/absent body. If the live API instead
-    // expects the externally-computed results in the body (a true "ingest
-    // external result" contract), send `summary` there and confirm the field
-    // names. We send it as the body now so the data is not silently dropped;
-    // a tenant that rejects an unexpected body will surface a clear 4xx via
-    // request()'s error text.
-    const execId = await this.request<number | { value?: number } | { Id?: number }>(
-      url,
-      {
+    if (this.testSetId) {
+      // Path 1 — Test Cloud Test Set execution.
+      const summary = this.reportSummary(sut, report);
+      const url =
+        `${this.orchestratorBase()}/api/TestAutomation/StartTestSetExecution` +
+        `?testSetId=${encodeURIComponent(this.testSetId)}&triggerType=ExternalTool`;
+      // VERIFY: with a populated Test Set, confirm whether externally-computed
+      // results belong in the body vs. are derived from Orchestrator executing the
+      // set. Not exercisable on this tenant (no Test Set; see method doc).
+      await this.request<number | { value?: number } | { Id?: number }>(url, {
         method: "POST",
         withFolder: true,
         body: JSON.stringify(summary),
+      });
+      return;
+    }
+
+    // Path 2 — Orchestrator Queue results channel (verified live).
+    await this.publishResultToQueue(sut, report);
+  }
+
+  /** Flat, primitive-only projection of a TestReport for UiPath payloads. */
+  private reportSummary(sut: SutRef, report: TestReport) {
+    const failed = report.results.filter((r) => !r.passed);
+    return {
+      sutId: sut.id,
+      modelLabel: sut.modelLabel,
+      allPassed: report.allPassed,
+      passed: report.results.length - failed.length,
+      failed: failed.length,
+      failedFields: failed.map((r) => r.field).join(", "),
+      // SpecificContent values must be primitives; carry detail as a JSON string.
+      detail: JSON.stringify(
+        report.results.map((r) => ({
+          field: r.field,
+          kind: r.kind,
+          passed: r.passed,
+          evidence: r.evidence,
+          ...(r.score !== undefined ? { score: r.score } : {}),
+        }))
+      ).slice(0, 9000),
+    };
+  }
+
+  /**
+   * Publish a TestReport to the Orchestrator results queue. Creates the queue on
+   * first use (idempotent — an existing queue returns 409, which we treat as ok).
+   */
+  private async publishResultToQueue(sut: SutRef, report: TestReport): Promise<void> {
+    const queueName = process.env["UIPATH_RESULTS_QUEUE"] ?? "Proctor_TestResults";
+    await this.ensureResultsQueue(queueName);
+
+    await this.request(
+      `${this.orchestratorBase()}/odata/Queues/UiPathODataSvc.AddQueueItem`,
+      {
+        method: "POST",
+        withFolder: true,
+        body: JSON.stringify({
+          itemData: {
+            Name: queueName,
+            Priority: report.allPassed ? "Normal" : "High",
+            SpecificContent: this.reportSummary(sut, report),
+          },
+        }),
       }
     );
+  }
 
-    // VERIFY: confirm the response shape. StartTestSetExecution is documented to
-    // return the execution Id directly as a number; defensively unwrap common
-    // OData wrappers too.
-    void execId; // execution id retained for callers/logs once shape is confirmed
+  private async ensureResultsQueue(queueName: string): Promise<void> {
+    try {
+      await this.request(`${this.orchestratorBase()}/odata/QueueDefinitions`, {
+        method: "POST",
+        withFolder: true,
+        body: JSON.stringify({
+          Name: queueName,
+          Description: "Proctor TestReport results channel",
+          AcceptAutomaticallyRetry: false,
+          EnforceUniqueReference: false,
+        }),
+      });
+    } catch (e) {
+      // 409 Conflict = queue already exists → fine. Anything else is a real error.
+      if (!String((e as Error).message).includes(" 409 ")) throw e;
+    }
   }
 
   /**
