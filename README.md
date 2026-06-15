@@ -144,17 +144,68 @@ Copy [`.env.example`](./.env.example) if you want to exercise the real paths. Pl
 
 ## Connecting real UiPath Test Cloud
 
-When UiPath Labs credentials are available:
+When UiPath Labs credentials are available, set the full env var set and flip the gateway:
 
 ```bash
-export UIPATH_BASE_URL=https://cloud.uipath.com
-export UIPATH_TENANT=<your-tenant>
-export UIPATH_PAT=<personal-access-token>
+# Required
+export UIPATH_BASE_URL=https://cloud.uipath.com   # Automation Cloud base URL (UiPath Labs/hackathon tenants may be https://staging.uipath.com — use whatever host your portal URL shows)
+export UIPATH_TENANT=<your-tenant>                # tenant name ({tenantName} URL segment)
+export UIPATH_PAT=<personal-access-token>         # sent as Authorization: Bearer
+
+# Required for real Cloud calls (each is asserted where used, with a clear error)
+export UIPATH_ORG=<organization-name>             # {organizationName} URL segment
+export UIPATH_FOLDER_ID=<folder-id>               # Orchestrator folder / OrganizationUnit id → X-UIPATH-OrganizationUnitId
+export UIPATH_PROCTOR_RELEASE_KEY=<release-uuid>  # ReleaseKey of the Proctor process (StartJobs)
+export UIPATH_TEST_SET_ID=<test-set-id>           # Test Set Proctor reports against
+
+# Optional
+export UIPATH_TASK_CATALOG=<catalog-name>         # Action Center task catalog for external tasks
+
 export PROCTOR_GATEWAY=testcloud
 pnpm dev
 ```
 
-The `TestCloudGateway` in `packages/uipath/src/testcloud.ts` contains the wired endpoints with TODOs for the final request-body mapping per the Test Cloud API spec. The adapter compiles and is integrated today; the TODOs are blocked only on live credentials to exercise and finalize the response shapes.
+The `TestCloudGateway` in `packages/uipath/src/testcloud.ts` is wired against the
+public UiPath Automation Cloud REST API and **verified live against a UiPath Labs
+tenant** (`hackathon26_529` / `DefaultTenant`, 2026-06-15):
+
+| Proctor call            | UiPath endpoint | Live status |
+| ----------------------- | --------------- | ----------- |
+| `openApprovalTask`      | `POST .../orchestrator_/tasks/GenericTasks/CreateTask` (`type: "ExternalTask"`) | ✅ **verified** — created Action Center tasks `100000126`–`100000128` |
+| `triggeredRun`          | `POST .../orchestrator_/odata/Jobs/...StartJobs` | ✅ **verified** — started Orchestrator jobs (e.g. `67149929`, State=Successful) against the `proctor-cycle-trigger` API workflow |
+| `pushTestResult`        | Test Cloud `StartTestSetExecution` **or** Orchestrator queue `AddQueueItem` | ✅ **verified** — publishes the TestReport to the `Proctor_TestResults` queue (queue + items created). Test Cloud Test Set path is wired for tenants with test cases (see note) |
+| `recordGovernanceEvent` | none — UiPath Audit Log API is read-only | ✅ warn-by-design (no public audit-write endpoint; use `local` for a persisted trail) |
+
+> **Honest status:** all four surfaces are **verified live with this exact code**
+> against a UiPath Labs tenant — re-runnable via `scripts/live-gateway-probe.ts`.
+>
+> One nuance, stated plainly: Track 3's headline surface is Test Cloud's *Test Set
+> execution*, but a Test Set requires **test cases authored in Studio**, and this Labs
+> tenant runs Studio Web in browser-only mode that gates RPA/Test-Case authoring
+> behind a local UiPath Robot install. With no way to author a test case in-browser,
+> Proctor publishes its TestReport to an **Orchestrator queue** (`Proctor_TestResults`)
+> as the live results channel — a real UiPath destination that needs no Robot. The
+> `StartTestSetExecution` path remains wired and runs wherever a populated Test Set
+> exists (set `UIPATH_TEST_SET_ID`).
+
+### Reproduce the live verification
+
+With the env vars above set (the project uses Doppler: `doppler run -p uipath-hack -c prd -- …`):
+
+```bash
+# Read-only tenant probe — auth, folders, releases, test sets, Action Center reachability
+bash scripts/verify-testcloud.sh
+
+# Exercise the real gateway against the tenant (creates a real Action Center task + Orchestrator job)
+PROCTOR_GATEWAY=testcloud npx tsx scripts/live-gateway-probe.ts
+```
+
+Confirmed against the Labs tenant: `openApprovalTask` (Action Center task created),
+`triggeredRun` (`StartJobs` → job `State=Successful`), folder header
+`X-UIPATH-OrganizationUnitId` = `UIPATH_FOLDER_ID`, and the `Critical/Medium/Low`
+priority enum. `pushTestResult` runs once a Test Set exists; the remaining
+`// VERIFY:` is its external-result ingestion contract (body vs. query) against the
+tenant Swagger (`.../orchestrator_/swagger/index.html`).
 
 ---
 
