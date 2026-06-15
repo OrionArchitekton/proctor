@@ -29,7 +29,7 @@ The demo system-under-test is a deliberately non-deterministic **invoice-extract
 
 - **Two-altitude architecture.** **UiPath is the enterprise control plane** — Test Cloud receives the test results, Action Center hosts the human approval task, Orchestrator/Maestro triggers runs on change, and the audit trail records every decision. The **Vercel Workflow DevKit** is the agent's own *durable runtime* — the heal-and-approve loop that survives interruptions and human-in-the-loop pauses. The two never compete for the orchestrator role; they operate at different altitudes.
 - **Pure, dependency-injected engine.** The assertion engine, contract learner, drift classifier, risk scorer, and contract store live in a pure `@proctor/engine` package with all LLM/I/O injected — so it's fully unit-tested and runs **keyless** in CI.
-- **UiPath behind one adapter.** A `UiPathGateway` interface has a `LocalGateway` (runs today, records governance to a log) and a `TestCloudGateway` (real REST endpoints, ready to connect when UiPath Labs credentials are provisioned). Nothing else in the system knows which is live.
+- **UiPath behind one adapter — verified live.** A `UiPathGateway` interface has a `LocalGateway` (disk + dashboard) and a `TestCloudGateway` (real Automation Cloud REST). All four surfaces are **verified live against a UiPath Labs tenant** with our actual code: `openApprovalTask` created real **Action Center** tasks (`100000126`–`128`); `triggeredRun` started an **Orchestrator** job (`67149929`, State=Successful) on a published API workflow; `pushTestResult` publishes each TestReport to an **Orchestrator queue** (`Proctor_TestResults`); governance warns honestly (UiPath has no public audit-write API). Re-runnable via `scripts/live-gateway-probe.ts`. *(Test Cloud's Test Set execution is wired too, but this Labs tenant gates Test-Case authoring behind a local Robot install, so the queue is the live results channel.)*
 - **Built entirely by Claude Code.** Every line — monorepo, engine, durable workflows, Next.js dashboard, 77 tests, and docs — was produced by the Claude Code coding agent through a spec → plan → test-driven-implementation pipeline. The git history is the evidence. *(This is the hackathon's coding-agent bonus.)*
 
 **Stack:** TypeScript, pnpm monorepo, Next.js, Vercel Workflow DevKit, Anthropic Claude, Zod, Vitest.
@@ -53,7 +53,7 @@ You cannot QA an AI agent the way you QA a function. The durable unit of trust i
 
 ## What's next
 
-- Connect the live UiPath Test Cloud gateway once Labs credentials land.
+- Populate a UiPath Test Set (needs Studio-authored test cases) so `pushTestResult` runs through Test Cloud's Test Set execution in addition to the live Orchestrator-queue results channel.
 - Persist learned reference values for richer semantic-drift detection.
 - Authentication on the approval action (production), step-granularity hardening, and a multi-SUT risk dashboard.
 

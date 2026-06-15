@@ -57,12 +57,12 @@ Record at 1080p+, large font, dark theme. Pre-open the GitHub repo tab and the a
 
 *(Optional 5s:* mention the *legitimate-evolution* path: "If the output had drifted but was still correct, Proctor would instead propose a contract patch and self-heal after approval — same loop, different verdict.")*
 
-## 4:15–4:45 — UiPath governance plane
+## 4:15–4:45 — UiPath governance plane (LIVE)
 
-**On screen:** show the governance event feed / mention the `UiPathGateway` and `testcloud.ts`.
+**On screen:** switch to the UiPath Automation Cloud tabs (already open): **Action Center** showing the real `Proctor: real-regression on invoice` task; **Orchestrator → Jobs** showing the Successful `proctor-cycle-trigger` job; **Orchestrator → Queues** showing the `Proctor_TestResults` items. (Flip `PROCTOR_GATEWAY=testcloud` beforehand so the run actually hits the tenant.)
 
 **Narration:**
-> "Everything Proctor decides flows up to UiPath as the governance plane — test results to Test Cloud, the approval task to Action Center, audit events recorded, and Orchestrator can trigger the next run on any model or prompt change. It runs locally today through one adapter and connects to live Test Cloud with a single environment flag."
+> "And this isn't a mock — it's running on UiPath. Flip one environment flag and the exact same agent talks to the real platform: the approval lands as a task in **Action Center**, Proctor starts an **Orchestrator** job on the change, and every TestReport is published to an Orchestrator **queue** as the results channel. UiPath is the enterprise control plane; Proctor is the durable agent underneath. All of it verified live — and every line built by Claude Code."
 
 ## 4:45–5:00 — Close
 
