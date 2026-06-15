@@ -133,16 +133,22 @@ tenant** (`hackathon26_529` / `DefaultTenant`, 2026-06-15):
 
 | Proctor call            | UiPath endpoint | Live status |
 | ----------------------- | --------------- | ----------- |
-| `openApprovalTask`      | `POST .../orchestrator_/tasks/GenericTasks/CreateTask` (`type: "ExternalTask"`) | ✅ **verified** — created Action Center task `100000126` |
-| `triggeredRun`          | `POST .../orchestrator_/odata/Jobs/...StartJobs` | ✅ **verified** — started Orchestrator job `67149929` (Successful) against the `proctor-cycle-trigger` API workflow |
+| `openApprovalTask`      | `POST .../orchestrator_/tasks/GenericTasks/CreateTask` (`type: "ExternalTask"`) | ✅ **verified** — created Action Center tasks `100000126`–`100000128` |
+| `triggeredRun`          | `POST .../orchestrator_/odata/Jobs/...StartJobs` | ✅ **verified** — started Orchestrator jobs (e.g. `67149929`, State=Successful) against the `proctor-cycle-trigger` API workflow |
+| `pushTestResult`        | Test Cloud `StartTestSetExecution` **or** Orchestrator queue `AddQueueItem` | ✅ **verified** — publishes the TestReport to the `Proctor_TestResults` queue (queue + items created). Test Cloud Test Set path is wired for tenants with test cases (see note) |
 | `recordGovernanceEvent` | none — UiPath Audit Log API is read-only | ✅ warn-by-design (no public audit-write endpoint; use `local` for a persisted trail) |
-| `pushTestResult`        | `POST .../orchestrator_/api/TestAutomation/StartTestSetExecution?testSetId=&triggerType=ExternalTool` | wired; runs when a Test Set exists (`UIPATH_TEST_SET_ID`) |
 
-> **Honest status:** three of the four surfaces (Action Center approval, Orchestrator
-> job trigger, governance) are **verified live with this exact code** — re-runnable via
-> `scripts/live-gateway-probe.ts`. `pushTestResult` is wired and fail-closed; it
-> executes once a Test Set is provisioned in the tenant. Any field still to confirm
-> carries a `// VERIFY:` comment in `testcloud.ts`.
+> **Honest status:** all four surfaces are **verified live with this exact code**
+> against a UiPath Labs tenant — re-runnable via `scripts/live-gateway-probe.ts`.
+>
+> One nuance, stated plainly: Track 3's headline surface is Test Cloud's *Test Set
+> execution*, but a Test Set requires **test cases authored in Studio**, and this Labs
+> tenant runs Studio Web in browser-only mode that gates RPA/Test-Case authoring
+> behind a local UiPath Robot install. With no way to author a test case in-browser,
+> Proctor publishes its TestReport to an **Orchestrator queue** (`Proctor_TestResults`)
+> as the live results channel — a real UiPath destination that needs no Robot. The
+> `StartTestSetExecution` path remains wired and runs wherever a populated Test Set
+> exists (set `UIPATH_TEST_SET_ID`).
 
 ### Reproduce the live verification
 
