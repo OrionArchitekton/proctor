@@ -10,8 +10,10 @@ import type { UiPathGateway, RunHandle, TaskId } from "./gateway.js";
  *                             GenericTasks endpoint, ExternalTask body, "Critical"
  *                             priority, folder header, lowercase `id` response).
  *   - recordGovernanceEvent() VERIFIED — warn-only by design (no UiPath audit-write API).
- *   - triggeredRun()          WIRED, fail-closed — needs UIPATH_PROCTOR_RELEASE_KEY
- *                             (a published Orchestrator process); not yet exercised.
+ *   - triggeredRun()          VERIFIED LIVE — StartJobs started Orchestrator job
+ *                             67149929 (State=Successful) against the published
+ *                             `proctor-cycle-trigger` API workflow. "ModernJobsCount"
+ *                             strategy + JSON InputArguments (incl. extra keys) accepted.
  *   - pushTestResult()        WIRED, fail-closed — needs UIPATH_TEST_SET_ID
  *                             (a Test Set in the tenant); not yet exercised.
  * The remaining endpoints/bodies are built from the public UiPath docs (cited
@@ -323,19 +325,18 @@ export class TestCloudGateway implements UiPathGateway {
 
     const startInfo = {
       ReleaseKey: this.releaseKey,
-      // VERIFY: "ModernJobsCount" is the strategy for modern folders + JobsCount;
-      // older/classic folders use "All"/"Specific" (which need RobotIds).
-      // Confirm the Proctor process's folder type and adjust if needed.
+      // CONFIRMED LIVE 2026-06-15: "ModernJobsCount" works for the serverless API
+      // workflow (job 67149929 Successful).
       Strategy: "ModernJobsCount",
       JobsCount: 1,
       // InputArguments is a JSON-encoded string of the process's input args.
-      // VERIFY: the Proctor orchestration process must declare matching input
-      // argument names (changeId, sutId, touched) for these to bind.
+      // CONFIRMED LIVE: the process declares changeId + sutId; extra keys (touched)
+      // in the payload were accepted without error.
       InputArguments: JSON.stringify(change),
     };
 
-    // VERIFY: StartJobs is folder-scoped — requires X-UIPATH-OrganizationUnitId
-    // pointing at the folder containing the Proctor process.
+    // CONFIRMED LIVE: folder-scoped; X-UIPATH-OrganizationUnitId = the folder
+    // holding the release (UIPATH_FOLDER_ID).
     const res = await this.request<{ value?: { Id: number }[] }>(url, {
       method: "POST",
       withFolder: true,
