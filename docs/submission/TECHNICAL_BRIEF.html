@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: letter; margin: 14mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #16181d; font-size: 10.2pt; line-height: 1.42; }
+  h1 { font-size: 19pt; margin: 0 0 2px; letter-spacing: -0.4px; }
+  h2 { font-size: 11.5pt; margin: 16px 0 5px; padding-bottom: 3px; border-bottom: 2px solid #e6e8ee; color: #0b3d5c; }
+  .sub { color: #555a66; font-size: 9.6pt; margin: 0 0 2px; }
+  .meta { color: #7a8088; font-size: 8.8pt; margin: 0 0 6px; }
+  .lead { font-size: 10.6pt; margin: 8px 0 2px; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0; font-size: 9.2pt; }
+  th, td { border: 1px solid #d7dbe3; padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { background: #f3f5f9; font-weight: 600; }
+  code, .mono { font-family: "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 8.8pt; background: #f3f5f9; padding: 1px 4px; border-radius: 3px; }
+  .ok { color: #137a3e; font-weight: 700; }
+  ul { margin: 4px 0 4px 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  .accent { color: #0b3d5c; font-weight: 700; }
+  .diagram { font-family: "SF Mono", Consolas, monospace; font-size: 8.2pt; line-height: 1.25; background: #0e1230; color: #d6def5; padding: 9px 11px; border-radius: 6px; white-space: pre; margin: 6px 0; }
+  .foot { margin-top: 12px; padding-top: 6px; border-top: 1px solid #e6e8ee; color: #555a66; font-size: 8.8pt; }
+  .pill { display: inline-block; background: #0b3d5c; color: #fff; border-radius: 10px; padding: 1px 8px; font-size: 8pt; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>Proctor — the agent that QAs other agents</h1>
+<p class="sub"><span class="pill">UiPath AgentHack 2026 · Track 3: UiPath Test Cloud</span></p>
+<p class="meta">Technical brief · Dan Mercede · github.com/OrionArchitekton/proctor (MIT) · Built entirely by Claude Code</p>
+
+<p class="lead"><strong>Proctor regression-tests non-deterministic AI automations</strong> — it learns each automation's behavioral contract, catches when a model or prompt change silently breaks it, classifies the drift, and escalates real regressions to a human, all governed by UiPath.</p>
+
+<h2>The problem &amp; the method</h2>
+<p>AI automations are non-deterministic: the same input rarely yields byte-identical output, so naive <code>assertEqual(output, expected)</code> either flakes constantly or passes on garbage. Proctor solves this with a <span class="accent">behavioral contract + drift classification</span> approach:</p>
+<ul>
+  <li><strong>Learn</strong> — run the automation over sample inputs; synthesize a versioned <code>Contract</code>: per-field assertion <em>altitudes</em> (structural / exact / semantic) plus absolute domain <strong>invariants</strong> (e.g. <code>sum_line_items_eq_total</code>).</li>
+  <li><strong>Run</strong> — re-evaluate against the contract using invariants + semantic similarity, never brittle equality.</li>
+  <li><strong>Classify</strong> — a drift classifier decides <strong>real-regression</strong> (alert), <strong>legitimate-evolution</strong> (still correct → propose a contract patch), or <strong>flaky</strong> (within tolerance). This is the novel core: distinguishing "it broke" from "it changed but is still correct."</li>
+  <li><strong>Escalate</strong> — real regressions pause a <strong>durable workflow on a human-approval hook</strong> that survives interruptions (verified against the runtime event log, not mocked).</li>
+</ul>
+
+<h2>Architecture — two altitudes that never compete</h2>
+<div class="diagram">UiPath Automation Cloud  — ENTERPRISE CONTROL PLANE
+  Test Cloud · Orchestrator (triggers) · Action Center (approvals) · audit
+        ▲ results / approvals            │ triggers a run
+        │                                ▼
+Proctor — DURABLE QA AGENT  (TypeScript / Next.js on Vercel)
+  Vercel Workflow = the agent's durable runtime (survives interruptions)
+  Contract Learner → Assertion Engine → Drift Classifier → Heal + Approval hook
+        │ exercises
+        ▼
+SUT: invoice-extraction agent (deliberately non-deterministic; "degraded" mode mis-extracts totals)</div>
+<p>One <code>UiPathGateway</code> adapter is the seam: <code>LocalGateway</code> (disk + dashboard, runs anywhere) ↔ <code>TestCloudGateway</code> (real UiPath REST). UiPath governs at the org level; Vercel Workflow makes the agent itself durable — they operate at different altitudes, so "UiPath orchestrates" and "the agent is durable" are both true.</p>
+
+<h2>Live UiPath verification — exercised against a real Labs tenant</h2>
+<p class="meta">Tenant <code>staging.uipath.com/hackathon26_529/DefaultTenant</code> · all four gateway surfaces hit with the actual code · reproduce: <code>doppler run -- env PROCTOR_GATEWAY=testcloud npx tsx scripts/live-gateway-probe.ts</code></p>
+<table>
+  <tr><th>Surface</th><th>UiPath endpoint</th><th>Live evidence</th></tr>
+  <tr><td><strong>Action Center</strong> (approval task)</td><td class="mono">tasks/GenericTasks/CreateTask (ExternalTask)</td><td class="ok">✓ created tasks 100000126–128</td></tr>
+  <tr><td><strong>Orchestrator</strong> (triggered run)</td><td class="mono">odata/Jobs/…StartJobs</td><td class="ok">✓ job 67149929, State = Successful</td></tr>
+  <tr><td><strong>Results channel</strong> (TestReport)</td><td class="mono">odata/Queues/…AddQueueItem</td><td class="ok">✓ Proctor_TestResults queue + items</td></tr>
+  <tr><td><strong>Governance</strong></td><td class="mono">— (no public audit-write API)</td><td class="ok">✓ honest warn-by-design</td></tr>
+</table>
+<p class="meta">Note: Test Cloud's <em>Test Set execution</em> path is also wired (<code>StartTestSetExecution</code>); this Labs tenant gates Test-Case authoring behind a local UiPath Robot install, so the Orchestrator queue is the live results channel. Nothing is overclaimed — every still-unconfirmed field carries a <code>// VERIFY:</code> note in <code>testcloud.ts</code>.</p>
+
+<h2>Build &amp; delivery evidence</h2>
+<ul>
+  <li><strong>76 unit tests + 1 pause/resume integration test</strong> (genuine workflow suspend→resume), typecheck clean, Next.js build green.</li>
+  <li><strong>Keyless &amp; reproducible</strong> for judges: <code>pnpm install &amp;&amp; pnpm demo</code> (no API key, no UiPath creds) narrates the full logic; <code>pnpm dev</code> runs the live dashboard.</li>
+  <li>Pure, dependency-injected engine (assertions / invariants / runner / learner / classifier / risk) — the testable core, isolated from all I/O.</li>
+</ul>
+
+<h2>Built with coding agents (bonus)</h2>
+<p>Every line — monorepo, engine, durable workflows, Next.js dashboard, test suite, UiPath integration, and docs — was produced by <strong>Claude Code</strong> through a spec → plan → test-driven-implementation pipeline. The git history is the evidence. This directly satisfies the "UiPath for Coding Agents" bonus under Platform Usage.</p>
+
+<div class="foot">
+  Repo: github.com/OrionArchitekton/proctor (MIT) · Built with: UiPath (Action Center · Orchestrator · Test Cloud) · Vercel Workflow · Anthropic Claude · Claude Code · TypeScript / Next.js
+</div>
+
+</body>
+</html>
