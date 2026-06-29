@@ -11,6 +11,30 @@ Proctor is a QA agent that regression-tests non-deterministic AI automations. It
 
 ---
 
+## Agent type
+
+**Coded Agent.** Proctor's logic (contract learner, assertion engine, drift classifier, risk scorer, durable approval workflow, and dashboard) is authored in TypeScript (`@proctor/engine`, `@proctor/uipath`, `workflows/`, `apps/web/`) and talks to the UiPath Platform over the public Automation Cloud REST API. It is **not** authored in UiPath Agent Builder / Studio low-code, and uses no Maestro low-code processes.
+
+> Two distinct senses of "coding agent," kept separate to avoid confusion: Proctor *is* a coded agent (above), **and** it was *built by* a coding agent (Claude Code). The latter satisfies the separate "UiPath for Coding Agents" bonus ([details](#built-with-coding-agents)).
+
+---
+
+## UiPath components
+
+Proctor governs its QA cycle through the UiPath Automation Cloud via the public REST API. Components used, each **verified live** against a UiPath Labs tenant (`hackathon26_529` / `DefaultTenant`, 2026-06-15) with this exact code (`packages/uipath/src/testcloud.ts`; re-runnable via `scripts/live-gateway-probe.ts`, full evidence in the [status table below](#connecting-real-uipath-test-cloud)):
+
+- **UiPath Test Cloud** *(Track 3 target)*: receives each `TestReport` via Test Set execution (`StartTestSetExecution`). Wired; runs wherever a populated Test Set exists.¹
+- **UiPath Orchestrator, Jobs**: `StartJobs` triggers the QA cycle on a model or prompt change *(verified: job `67149929`, State=Successful)*.
+- **UiPath Orchestrator, Queues**: every `TestReport` is published to the `Proctor_TestResults` queue (`AddQueueItem`), Proctor's live results channel today *(verified: queue + items created)*.
+- **UiPath Action Center**: opens the human-in-the-loop approval task on a real regression (`GenericTasks/CreateTask`, `ExternalTask`) *(verified: tasks `100000126` to `100000128`)*.
+- **API Workflows**: `proctor-cycle-trigger`, the published Orchestrator process the Jobs call invokes.
+
+¹ This Labs tenant gates Test-Case authoring behind a local UiPath Robot install, so the Orchestrator queue is the live results channel today; the Test Cloud Test Set path runs wherever a Test Set is populated (`UIPATH_TEST_SET_ID`).
+
+**Not used (stated honestly):** UiPath Agent Builder, Studio low-code, and Maestro. Proctor is a coded agent, not low-code authored.
+
+---
+
 ## What it does
 
 AI automations are non-deterministic: the same input rarely produces byte-identical output. That makes naive regression testing (`output == expected`) unusable — it either flakes constantly or lets real regressions through.
