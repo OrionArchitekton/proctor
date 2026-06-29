@@ -1,7 +1,11 @@
-# Proctor — Presentation Deck (content, slide-by-slide)
+# Proctor: Presentation Deck (content, slide by slide)
 
-Drop these into the UiPath deck template (or any slides tool). Each `##` is one slide:
-a headline + tight bullets + a speaker note. Designed to read in ~3–4 min.
+Each `##` below is one slide: a headline, tight bullets, and a speaker note. Reads in about 3 to 4 minutes.
+
+**Submitting on the required UiPath template** (per the Devpost reviewer, the deck must live on UiPath's Google Slides template):
+1. Open the template, then **File > Make a copy** into your own Drive.
+2. For each template slide, paste the matching block below. The template's "UiPath products used" and "agent type" fields map to **slides 1 and 6**.
+3. Set the copy to **anyone with the link can view**, then submit that link on Devpost.
 
 ---
 
@@ -11,7 +15,8 @@ Regression testing for non-deterministic AI automations, governed by UiPath.
 
 - UiPath AgentHack 2026 · **Track 3: UiPath Test Cloud**
 - Dan Mercede · Repo: github.com/OrionArchitekton/proctor
-- Built entirely by Claude Code (coding agent)
+- **Agent type: Coded Agent** (TypeScript), integrating UiPath via the public REST API
+- Built entirely by Claude Code (the coding-agent bonus)
 
 *Note: One line — "AI automations are easy to build and almost impossible to keep correct. Proctor is the safety net."*
 
@@ -66,13 +71,15 @@ Regression testing for non-deterministic AI automations, governed by UiPath.
 
 ---
 
-## 6 — Running live on UiPath (verified, not mocked)
-**All four gateway surfaces exercised against a real UiPath Labs tenant**
+## 6: UiPath components, running live (verified, not mocked)
+**Every component exercised against a real UiPath Labs tenant**
 
-- **Action Center** — real approval task created (`Proctor: real-regression on invoice`, Critical).
-- **Orchestrator** — `StartJobs` ran an API-workflow job, **State = Successful**, inputs bound from the agent.
-- **Orchestrator queue** — every TestReport published to `Proctor_TestResults` (results channel).
-- **Governance** — honest by design (UiPath exposes no audit-write API).
+- **Test Cloud** *(Track 3)*: receives each TestReport via Test Set execution; runs wherever a Test Set is populated.
+- **Orchestrator (Jobs)**: `StartJobs` ran the `proctor-cycle-trigger` API workflow, **State = Successful**, inputs bound from the agent.
+- **Orchestrator (Queues)**: every TestReport published to `Proctor_TestResults`, the live results channel.
+- **Action Center**: real approval task created (`Proctor: real-regression on invoice`, Critical).
+- **API Workflows**: `proctor-cycle-trigger`, the published process the Jobs call invokes.
+- **Governance**: honest by design (UiPath exposes no audit-write API).
 
 *Note: Flip one env flag (`PROCTOR_GATEWAY=testcloud`) and the same agent talks to the real platform. Re-runnable via `scripts/live-gateway-probe.ts`.*
 
