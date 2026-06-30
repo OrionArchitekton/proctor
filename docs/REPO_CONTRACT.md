@@ -26,6 +26,16 @@ adapters, Vercel Workflow durability, and a Next.js dashboard.
 It is not OAC business ownership, estate platform ownership, Orion Runtime
 substrate, shared infra, managed deploy-target, or secret-scope ownership.
 
+## Terms
+
+- OAC: Orion Apex Capital, a business-system family outside this repo.
+- OIA: Orion Intelligence Agency, a business-system family outside this repo.
+- OAM: Orion AI Media, a business-system family outside this repo.
+- ATS: Orion Apex trading-system work; not owned by this hackathon project.
+- Cosmocrat: governance and policy authority, not execution ownership.
+- Orion Runtime: shared execution substrate; not owned by this repo.
+- SUT: system under test for Proctor's demo and local test harness.
+
 ## Owns
 
 - repo-local TypeScript/pnpm monorepo source for Proctor
@@ -82,6 +92,16 @@ git diff --check
 For implementation changes, follow `AGENTS.md`: run `pnpm typecheck`, `pnpm
 test`, and `pnpm test:int` after installing with the frozen lockfile.
 
+## Enforcement
+
+- Repo-local review applies the PR reject rules in this file.
+- Docs-only changes must pass `git diff --check`.
+- Implementation changes must pass the `AGENTS.md` pnpm verification stack.
+- Estate-level indexing is enforced by
+  `scripts/validate_repo_contract_registry.py` in `orion-estate-audit`.
+- Future automation that changes secret handling, keyless demo behavior, or
+  ownership boundaries must point its checks back to this contract.
+
 ## Basis
 
 - `AGENTS.md`
@@ -90,9 +110,11 @@ test`, and `pnpm test:int` after installing with the frozen lockfile.
 - `docs/submission/DEVPOST.md`
 - `docs/submission/DEMO_SCRIPT.md`
 - `docs/submission/DECK.md`
-- `repos/repo_contract_registry_20260317.csv` in
-  `OrionArchitekton/orion-estate-audit`
+- `repos/repo_contract_registry_20260317.csv` in `orion-estate-audit`:
+  <https://github.com/OrionArchitekton/orion-estate-audit/blob/8773013a0d3ae2230641ee76e6d8b99a62a5cfc2/repos/repo_contract_registry_20260317.csv>
 - `architecture/repo_contracts/dan_mercede_personal_brand_repo_contract_20260318.md`
-  in `OrionArchitekton/orion-estate-audit`
+  in `orion-estate-audit`:
+  <https://github.com/OrionArchitekton/orion-estate-audit/blob/8773013a0d3ae2230641ee76e6d8b99a62a5cfc2/architecture/repo_contracts/dan_mercede_personal_brand_repo_contract_20260318.md>
 - `architecture/PERSONAL_BRAND_HACKATHON_AND_OSS_PROJECT_ADMISSION_NOTE_20260621.md`
-  in `OrionArchitekton/orion-estate-audit`
+  in `orion-estate-audit`:
+  <https://github.com/OrionArchitekton/orion-estate-audit/blob/8773013a0d3ae2230641ee76e6d8b99a62a5cfc2/architecture/PERSONAL_BRAND_HACKATHON_AND_OSS_PROJECT_ADMISSION_NOTE_20260621.md>
