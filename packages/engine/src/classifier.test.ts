@@ -72,6 +72,29 @@ describe("classifyDrift — invariant failure", () => {
     expect(verdict.rationale).toContain("sum_line_items_eq_total");
     expect(verdict.rationale).toContain("currency_consistent");
   });
+
+  it("names a repeated invariant id once in the rationale", async () => {
+    const reason: ReasonDrift = async () => {
+      throw new Error("should not be called");
+    };
+
+    // The same invariant can fail across several offending rows; the rationale
+    // must name it once, not once per failing result.
+    const report = makeReport({
+      results: [
+        { field: "sum_line_items_eq_total", kind: "exact", passed: false, evidence: "row 1" },
+        { field: "sum_line_items_eq_total", kind: "exact", passed: false, evidence: "row 2" },
+        { field: "sum_line_items_eq_total", kind: "exact", passed: false, evidence: "row 3" },
+      ],
+    });
+
+    const verdict = await classifyDrift(report, EMPTY_BASELINE, { reason });
+
+    expect(verdict.kind).toBe("real-regression");
+    const occurrences =
+      verdict.rationale.split("sum_line_items_eq_total").length - 1;
+    expect(occurrences).toBe(1);
+  });
 });
 
 // ── (b) borderline semantic → flaky, reason NOT called ────────────────────
