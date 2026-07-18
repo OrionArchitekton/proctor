@@ -34,9 +34,13 @@ export async function classifyDrift(
   }
 
   // Rule 2 — invariant violated (deterministic; LLM must not override)
-  const failedInvariantIds = failures
-    .filter((r) => isInvariantId(r.field))
-    .map((r) => r.field);
+  // De-duplicate: one invariant can fail across several offending rows, and the
+  // rationale should name it once, not once per failing result.
+  const failedInvariantIds = [
+    ...new Set(
+      failures.filter((r) => isInvariantId(r.field)).map((r) => r.field),
+    ),
+  ];
 
   if (failedInvariantIds.length > 0) {
     return {
