@@ -131,7 +131,7 @@ importers:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: latest
-        version: 3.0.81(zod@4.3.6)
+        version: 3.0.81(zod@3.25.76)
       '@proctor/engine':
         specifier: workspace:*
         version: link:../packages/engine
@@ -146,17 +146,20 @@ importers:
         version: link:../packages/uipath
       '@workflow/ai':
         specifier: latest
-        version: 5.0.0(@opentelemetry/api@1.9.0)(ai@6.0.197(zod@4.3.6))(workflow@4.3.1(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@opentelemetry/api@1.9.0)(@swc/cli@0.8.1(@swc/core@1.15.3)(chokidar@5.0.0))(@swc/core@1.15.3)(next@15.5.19(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.2.7))(react@19.2.7))(typescript@5.9.3))
+        version: 5.0.0(@opentelemetry/api@1.9.0)(ai@6.0.197(zod@3.25.76))(workflow@4.3.1(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@opentelemetry/api@1.9.0)(@swc/cli@0.8.1(@swc/core@1.15.3)(chokidar@5.0.0))(@swc/core@1.15.3)(next@15.5.19(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.2.7))(react@19.2.7))(typescript@5.9.3))
       ai:
         specifier: latest
-        version: 6.0.197(zod@4.3.6)
+        version: 6.0.197(zod@3.25.76)
       workflow:
         specifier: latest
         version: 4.3.1(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@opentelemetry/api@1.9.0)(@swc/cli@0.8.1(@swc/core@1.15.3)(chokidar@5.0.0))(@swc/core@1.15.3)(next@15.5.19(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.2.7))(react@19.2.7))(typescript@5.9.3)
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@workflow/vitest':
         specifier: latest
-        version: 4.0.9(@opentelemetry/api@1.9.0)(vite@6.4.3(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4))(vitest@3.2.6(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4))(zod@4.3.6)
+        version: 4.0.9(@opentelemetry/api@1.9.0)(vite@6.4.3(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4))(vitest@3.2.6(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4))(zod@3.25.76)
 
 packages:
 
@@ -3369,11 +3372,25 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
       zod: 3.25.76
 
+  '@ai-sdk/anthropic@3.0.81(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@ai-sdk/provider-utils': 4.0.27(zod@3.25.76)
+      zod: 3.25.76
+
   '@ai-sdk/anthropic@3.0.81(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.10
       '@ai-sdk/provider-utils': 4.0.27(zod@4.3.6)
       zod: 4.3.6
+    optional: true
+
+  '@ai-sdk/gateway@3.0.125(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@ai-sdk/provider-utils': 4.0.27(zod@3.25.76)
+      '@vercel/oidc': 3.2.0
+      zod: 3.25.76
 
   '@ai-sdk/gateway@3.0.125(zod@4.3.6)':
     dependencies:
@@ -3381,6 +3398,7 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.27(zod@4.3.6)
       '@vercel/oidc': 3.2.0
       zod: 4.3.6
+    optional: true
 
   '@ai-sdk/google@3.0.80(zod@4.3.6)':
     dependencies:
@@ -3410,12 +3428,20 @@ snapshots:
       secure-json-parse: 2.7.0
       zod: 3.25.76
 
+  '@ai-sdk/provider-utils@4.0.27(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@standard-schema/spec': 1.1.0
+      eventsource-parser: 3.1.0
+      zod: 3.25.76
+
   '@ai-sdk/provider-utils@4.0.27(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.10
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.1.0
       zod: 4.3.6
+    optional: true
 
   '@ai-sdk/provider@1.1.3':
     dependencies:
@@ -4425,11 +4451,11 @@ snapshots:
       loupe: 3.2.1
       tinyrainbow: 2.0.0
 
-  '@workflow/ai@5.0.0(@opentelemetry/api@1.9.0)(ai@6.0.197(zod@4.3.6))(workflow@4.3.1(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@opentelemetry/api@1.9.0)(@swc/cli@0.8.1(@swc/core@1.15.3)(chokidar@5.0.0))(@swc/core@1.15.3)(next@15.5.19(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.2.7))(react@19.2.7))(typescript@5.9.3))':
+  '@workflow/ai@5.0.0(@opentelemetry/api@1.9.0)(ai@6.0.197(zod@3.25.76))(workflow@4.3.1(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@opentelemetry/api@1.9.0)(@swc/cli@0.8.1(@swc/core@1.15.3)(chokidar@5.0.0))(@swc/core@1.15.3)(next@15.5.19(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.2.7))(react@19.2.7))(typescript@5.9.3))':
     dependencies:
       '@ai-sdk/provider': 3.0.10
       '@workflow/serde': 4.1.1
-      ai: 6.0.197(zod@4.3.6)
+      ai: 6.0.197(zod@3.25.76)
       workflow: 4.3.1(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@opentelemetry/api@1.9.0)(@swc/cli@0.8.1(@swc/core@1.15.3)(chokidar@5.0.0))(@swc/core@1.15.3)(next@15.5.19(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.2.7))(react@19.2.7))(typescript@5.9.3)
       zod: 4.3.6
     optionalDependencies:
@@ -4658,6 +4684,22 @@ snapshots:
       - '@swc/helpers'
       - supports-color
 
+  '@workflow/vitest@4.0.9(@opentelemetry/api@1.9.0)(vite@6.4.3(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4))(vitest@3.2.6(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4))(zod@3.25.76)':
+    dependencies:
+      '@workflow/builders': 4.0.9(@opentelemetry/api@1.9.0)
+      '@workflow/core': 4.3.1(@opentelemetry/api@1.9.0)
+      '@workflow/rollup': 4.0.8(@opentelemetry/api@1.9.0)
+      '@workflow/world': 4.1.4(zod@3.25.76)
+      '@workflow/world-local': 4.1.4(@opentelemetry/api@1.9.0)
+      vitest: 3.2.6(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4)
+    optionalDependencies:
+      vite: 6.4.3(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4)
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - '@swc/helpers'
+      - supports-color
+      - zod
+
   '@workflow/vitest@4.0.9(@opentelemetry/api@1.9.0)(vite@6.4.3(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4))(vitest@3.2.6(@types/node@22.19.20)(jiti@2.7.0)(tsx@4.22.4))(zod@4.3.6)':
     dependencies:
       '@workflow/builders': 4.0.9(@opentelemetry/api@1.9.0)
@@ -4704,6 +4746,11 @@ snapshots:
       zod: 4.3.6
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
+
+  '@workflow/world@4.1.4(zod@3.25.76)':
+    dependencies:
+      ulid: 3.0.2
+      zod: 3.25.76
 
   '@workflow/world@4.1.4(zod@4.3.6)':
     dependencies:
@@ -4823,13 +4870,13 @@ snapshots:
     optionalDependencies:
       react: 19.2.7
 
-  ai@6.0.197(zod@4.3.6):
+  ai@6.0.197(zod@3.25.76):
     dependencies:
-      '@ai-sdk/gateway': 3.0.125(zod@4.3.6)
+      '@ai-sdk/gateway': 3.0.125(zod@3.25.76)
       '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.27(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.27(zod@3.25.76)
       '@opentelemetry/api': 1.9.0
-      zod: 4.3.6
+      zod: 3.25.76
 
   ansi-align@3.0.1:
     dependencies:
