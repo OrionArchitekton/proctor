@@ -8,7 +8,7 @@
     "@workflow/ai": "latest",
     "ai": "latest",
     "@ai-sdk/anthropic": "latest",
-    "zod": "^3.25.76",
+    "zod": "^4.3.6",
     "@proctor/shared": "workspace:*",
     "@proctor/engine": "workspace:*",
     "@proctor/sut-invoice": "workspace:*",
